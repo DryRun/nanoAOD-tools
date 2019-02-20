@@ -39,7 +39,7 @@ class PostProcessor :
 		self.histFileName = histFileName
 		self.histDirName = histDirName
 
-	def run(self) :
+	def run(self, maxEvents=None) :
 		outpostfix = self.postfix if self.postfix != None else ("_Friend" if self.friend else "_Skim")
 		if not self.noOut:
 			
@@ -131,7 +131,7 @@ class PostProcessor :
 
 			# process events, if needed
 			if not fullClone:
-				(nall, npass, timeLoop) = eventLoop(self.modules, inFile, outFile, inTree, outTree)
+				(nall, npass, timeLoop) = eventLoop(self.modules, inFile, outFile, inTree, outTree, maxEvents=maxEvents)
 				print 'Processed %d preselected entries from %s (%s entries). Finally selected %d entries' % (nall, fname, inTree.GetEntries(), npass)
 			else:
 				nall = inTree.GetEntries()

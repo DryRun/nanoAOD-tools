@@ -196,7 +196,11 @@ class jetSmearer(Module):
         
         return ( smear_vals[enum_nominal], smear_vals[enum_shift_up], smear_vals[enum_shift_down] )
     
+    def analyze(self, event):
+        pass
 
+    def beginFile(self):
+        pass
 
-    
-
+    def endFile(self):
+        pass

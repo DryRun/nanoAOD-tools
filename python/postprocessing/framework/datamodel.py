@@ -55,6 +55,8 @@ class Object:
         self._event = event
         self._prefix = prefix+"_"
         self._index = index
+        self._p4 = ROOT.TLorentzVector()
+
     def __getattr__(self, name):
         if name in self.__dict__: return self.__dict__[name]
         if name[:2] == "__" and name[-2:] == "__":
@@ -65,16 +67,20 @@ class Object:
         val = ord(val) if type(val)==str else val # convert char to integer number
         self.__dict__[name] = val ## cache
         return val
+
     def __getitem__(self, attr):
         return self.__getattr__(attr)
+
     def p4(self):
-        ret = ROOT.TLorentzVector()
-        ret.SetPtEtaPhiM(self.pt, self.eta, self.phi, self.mass)
-        return ret
+        self._p4.SetPtEtaPhiM(self.pt, self.eta, self.phi, self.mass)
+        return self._p4
+
     def subObj(self, prefix):
         return Object(self._event, self._prefix+prefix)
+
     def __repr__(self):
         return ("<%s[%s]>" % (self._prefix[:-1], self._index)) if self._index != None else ("<%s>" % self._prefix[:-1])
+        
     def __str__(self):
         return self.__repr__()
 
