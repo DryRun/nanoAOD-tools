@@ -6,6 +6,7 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection, Object
 from PhysicsTools.NanoAODTools.postprocessing.framework.module import Module
 from PhysicsTools.NanoAODTools.postprocessing.tools import matchObjectCollection, matchObjectCollectionMultiple
+from PhysicsTools.NanoAODTools.postprocessing.framework.enums import *
 
 class jetSmearer(Module):
     def __init__(self, globalTag, jetType = "AK4PFchs", jerInputFileName = "Spring16_25nsV10_MC_PtResolution_AK4PFchs.txt", jerUncertaintyInputFileName = "Spring16_25nsV10_MC_SF_AK4PFchs.txt"):
@@ -17,7 +18,6 @@ class jetSmearer(Module):
 
         # read jet energy resolution (JER) and JER scale factors and uncertainties
         # (the txt files were downloaded from https://github.com/cms-jet/JRDatabase/tree/master/textFiles/Spring16_25nsV10_MC )
-        self.jerInputFilePath = os.environ['CMSSW_BASE'] + "/src/PhysicsTools/NanoAODTools/data/jme/"
         self.jerInputFileName = jerInputFileName
         self.jerUncertaintyInputFileName = jerUncertaintyInputFileName
 
@@ -38,10 +38,10 @@ class jetSmearer(Module):
 
         # initialize JER scale factors and uncertainties
         # (cf. PhysicsTools/PatUtils/interface/SmearedJetProducerT.h )
-        print("Loading jet energy resolutions (JER) from file '%s'" % os.path.join(self.jerInputFilePath, self.jerInputFileName))
-        self.jer = ROOT.PyJetResolutionWrapper(os.path.join(self.jerInputFilePath, self.jerInputFileName))
-        print("Loading JER scale factors and uncertainties from file '%s'" % os.path.join(self.jerInputFilePath, self.jerUncertaintyInputFileName))
-        self.jerSF_and_Uncertainty = ROOT.PyJetResolutionScaleFactorWrapper(os.path.join(self.jerInputFilePath, self.jerUncertaintyInputFileName))
+        print("Loading jet energy resolutions (JER) from file {}".format(self.jerInputFileName))
+        self.jer = ROOT.PyJetResolutionWrapper(self.jerInputFileName)
+        print("Loading JER scale factors and uncertainties from file {}".format(self.jerUncertaintyInputFileName))
+        self.jerSF_and_Uncertainty = ROOT.PyJetResolutionScaleFactorWrapper(self.jerUncertaintyInputFileName)
 
     def endJob(self):
         pass
@@ -78,9 +78,6 @@ class jetSmearer(Module):
         #--------------------------------------------------------------------------------------------
         # CV: define enums needed to access JER scale factors and uncertainties
         #    (cf. CondFormats/JetMETObjects/interface/JetResolutionObject.h) 
-        enum_nominal         = 0
-        enum_shift_up        = 2
-        enum_shift_down      = 1
         #--------------------------------------------------------------------------------------------
 
         self.params_resolution.setJetPt(jet.Perp())
@@ -89,12 +86,12 @@ class jetSmearer(Module):
         jet_pt_resolution = self.jer.getResolution(self.params_resolution)
 
         jet_pt_sf_and_uncertainty = {}
-        for enum_central_or_shift in [ enum_nominal, enum_shift_up, enum_shift_down ]:
+        for enum_central_or_shift in [ Shift.kNominal, Shift.kUp, Shift.kDown ]:
             self.params_sf_and_uncertainty.setJetEta(jet.Eta())
-            jet_pt_sf_and_uncertainty[enum_central_or_shift] = self.jerSF_and_Uncertainty.getScaleFactor(self.params_sf_and_uncertainty, enum_central_or_shift)
+            jet_pt_sf_and_uncertainty[enum_central_or_shift] = self.jerSF_and_Uncertainty.getScaleFactor(self.params_sf_and_uncertainty, enum_central_or_shift.value)
 
         smear_vals = {}
-        for central_or_shift in [ enum_nominal, enum_shift_up, enum_shift_down ]:
+        for central_or_shift in [ Shift.kNominal, Shift.kUp, Shift.kDown ]:
 
             smearFactor = None
             if genJet:
@@ -123,7 +120,7 @@ class jetSmearer(Module):
 
             smear_vals[central_or_shift] = smearFactor
         
-        return ( smear_vals[enum_nominal], smear_vals[enum_shift_up], smear_vals[enum_shift_down] )
+        return ( smear_vals[Shift.kNominal], smear_vals[Shift.kUp], smear_vals[Shift.kDown] )
     
 
 
@@ -154,18 +151,18 @@ class jetSmearer(Module):
         #--------------------------------------------------------------------------------------------
         # CV: define enums needed to access JER scale factors and uncertainties
         #    (cf. CondFormats/JetMETObjects/interface/JetResolutionObject.h) 
-        enum_nominal         = 0
-        enum_shift_up        = 2
-        enum_shift_down      = 1
+        #Shift.kNominal         = 0
+        #Shift.kUp        = 2
+        #Shift.kDown      = 1
         #--------------------------------------------------------------------------------------------
 
-        jet_m_sf_and_uncertainty = dict( zip( [enum_nominal, enum_shift_up, enum_shift_down], [0.1, 0.2, 0.0] ) )
+        jet_m_sf_and_uncertainty = dict( zip( [Shift.kNominal, Shift.kUp, Shift.kDown], [0.1, 0.2, 0.0] ) )
 
         # generate random number with flat distribution between 0 and 1
         u = self.rnd.Rndm()
 
         smear_vals = {}
-        for central_or_shift in [ enum_nominal, enum_shift_up, enum_shift_down ]:
+        for central_or_shift in [ Shift.kNominal, Shift.kUp, Shift.kDown ]:
 
             smearFactor = None
             if genJetIn != None and genJet:
@@ -194,7 +191,7 @@ class jetSmearer(Module):
 
             smear_vals[central_or_shift] = smearFactor
         
-        return ( smear_vals[enum_nominal], smear_vals[enum_shift_up], smear_vals[enum_shift_down] )
+        return ( smear_vals[Shift.kNominal], smear_vals[Shift.kUp], smear_vals[Shift.kDown] )
     
     def analyze(self, event):
         pass
