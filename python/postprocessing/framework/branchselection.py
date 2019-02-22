@@ -21,7 +21,7 @@ class BranchSelection:
                     print "Error in file %s, line '%s': it's not (keep|keepmatch|drop|dropmatch) <branch_pattern>" % (filename, line)
             except ValueError, e:
                 print "Error in file %s, line '%s': it's not (keep|keepmatch|drop|dropmatch) <branch_pattern>" % (filename, line)
-        print self._ops
+        #print self._ops
 
     def selectBranches(self,tree):
         tree.SetBranchStatus("*",1)
@@ -30,7 +30,7 @@ class BranchSelection:
             if type(bre) == re._pattern_type:
                 for n in branchNames: 
                     if re.match(bre, n): 
-                        print "Setting branch status for {} to {}".format(n, stat)
+                        #print "Setting branch status for {} to {}".format(n, stat)
                         tree.SetBranchStatus(n, stat)
             else:
                 tree.SetBranchStatus(bre, stat)
