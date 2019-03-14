@@ -14,15 +14,22 @@ echo "CMSSW BASE, python path, pwd"
 echo $CMSSW_BASE 
 echo $PYTHON_PATH
 echo $PWD 
-rm -rf $CMSSW_BASE/lib/
-rm -rf $CMSSW_BASE/src/
-rm -rf $CMSSW_BASE/module/
-rm -rf $CMSSW_BASE/python/
+mkdir hide
+mv $CMSSW_BASE/lib/ hide
+mv $CMSSW_BASE/src/ hide
+#mv $CMSSW_BASE/module/ hide
+mv $CMSSW_BASE/python/ hide
 mv lib $CMSSW_BASE/lib
 mv src $CMSSW_BASE/src
-mv module $CMSSW_BASE/module
+#mv module $CMSSW_BASE/module
 mv python $CMSSW_BASE/python
+cd $CMSSW_BASE/src
+scram b -j8
+cd -
 
 echo Found Proxy in: $X509_USER_PROXY
+#echo "asdf"
+#python -c "import sys; print sys.path"
+ls -lrth
 python crab_script.py $1
 fi
