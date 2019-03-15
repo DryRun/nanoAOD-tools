@@ -10,5 +10,5 @@ p=PostProcessor(".",inputFiles(),"Jet_pt>200",modules=[exampleModuleConstr()],pr
 p.run()
 
 print "DONE"
-os.system("ls -lR")
+os.system("ls -lrth")
 
