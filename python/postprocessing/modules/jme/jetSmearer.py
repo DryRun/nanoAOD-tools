@@ -6,9 +6,10 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection, Object
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.tools import matchObjectCollection, matchObjectCollectionMultiple
+from PhysicsTools.NanoAODTools.postprocessing.framework.enums import *
 
 class jetSmearer(Module):
-    def __init__(self, globalTag, jetType = "AK4PFchs", jerInputFileName = "Spring16_25nsV10_MC_PtResolution_AK4PFchs.txt", jerUncertaintyInputFileName = "Spring16_25nsV10_MC_SF_AK4PFchs.txt", jmr_vals=[1.09, 1.14, 1.04]):
+    def __init__(self, globalTag, jetType=JetType.kAK4PFchs, jerInputFileName = "Spring16_25nsV10_MC_PtResolution_AK4PFchs.txt", jerUncertaintyInputFileName = "Spring16_25nsV10_MC_SF_AK4PFchs.txt", jmr_vals=[1.09, 1.14, 1.04]):
         
         #--------------------------------------------------------------------------------------------
         # CV: globalTag and jetType not yet used, as there is no consistent set of txt files for
@@ -96,23 +97,15 @@ class jetSmearer(Module):
         if not (jet.Perp() > 0.):
             print("WARNING: jet pT = %1.1f !!" % jet.Perp())
             return ( jet.Perp(), jet.Perp(), jet.Perp() )
-        
-        #--------------------------------------------------------------------------------------------
-        # CV: define enums needed to access JER scale factors and uncertainties
-        #    (cf. CondFormats/JetMETObjects/interface/JetResolutionObject.h) 
-        enum_nominal         = 0
-        enum_shift_up        = 2
-        enum_shift_down      = 1
-        #--------------------------------------------------------------------------------------------
-        
+                
         jet_pt_sf_and_uncertainty = {}
-        for enum_central_or_shift in [ enum_nominal, enum_shift_up, enum_shift_down ]:
+        for central_or_shift in [ Shift.kNominal, Shift.kUp, Shift.kDown ]:
             self.params_sf_and_uncertainty.setJetEta(jet.Eta())
-            jet_pt_sf_and_uncertainty[enum_central_or_shift] = self.jerSF_and_Uncertainty.getScaleFactor(self.params_sf_and_uncertainty, enum_central_or_shift)
+            jet_pt_sf_and_uncertainty[central_or_shift] = self.jerSF_and_Uncertainty.getScaleFactor(self.params_sf_and_uncertainty, central_or_shift.value)
         
         smear_vals = {}
         if genJet:
-          for central_or_shift in [ enum_nominal, enum_shift_up, enum_shift_down ]:
+          for central_or_shift in [ Shift.kNominal, Shift.kUp, Shift.kDown ]:
               #
               # Case 1: we have a "good" generator level jet matched to the reconstructed jet
               #
@@ -132,7 +125,7 @@ class jetSmearer(Module):
           jet_pt_resolution = self.jer.getResolution(self.params_resolution)
           
           rand = self.rnd.Gaus(0,jet_pt_resolution)
-          for central_or_shift in [ enum_nominal, enum_shift_up, enum_shift_down ]:
+          for central_or_shift in [ Shift.kNominal, Shift.kUp, Shift.kDown ]:
             if jet_pt_sf_and_uncertainty[central_or_shift] > 1.:
               #
               # Case 2: we don't have a generator level jet. Smear jet pT using a random Gaussian variation
@@ -151,7 +144,7 @@ class jetSmearer(Module):
                 smearFactor = 1.e-2
             smear_vals[central_or_shift] = smearFactor
         
-        return ( smear_vals[enum_nominal], smear_vals[enum_shift_up], smear_vals[enum_shift_down] )
+        return ( smear_vals[Shift.kNominal], smear_vals[Shift.kUp], smear_vals[Shift.kDown] )
         
     
     def getSmearValsM(self, jetIn, genJetIn):
@@ -182,19 +175,12 @@ class jetSmearer(Module):
             print("WARNING: jet m = %1.1f !!" % jet.M())
             return ( jet.M(), jet.M(), jet.M() )
         
-        #--------------------------------------------------------------------------------------------
-        # CV: define enums needed to access JER scale factors and uncertainties
-        #    (cf. CondFormats/JetMETObjects/interface/JetResolutionObject.h) 
-        enum_nominal         = 0
-        enum_shift_up        = 2
-        enum_shift_down      = 1
-        #--------------------------------------------------------------------------------------------
         
-        jet_m_sf_and_uncertainty = dict( zip( [enum_nominal, enum_shift_up, enum_shift_down], self.jmr_vals ) )
+        jet_m_sf_and_uncertainty = dict( zip( [Shift.kNominal, Shift.kUp, Shift.kDown], [0.1, 0.2, 0.0] ) )
         
         smear_vals = {}
         if genJet:
-          for central_or_shift in [ enum_nominal, enum_shift_up, enum_shift_down ]:
+          for central_or_shift in [ Shift.kNominal, Shift.kUp, Shift.kDown ]:
               #
               # Case 1: we have a "good" generator level jet matched to the reconstructed jet
               #
@@ -214,7 +200,7 @@ class jetSmearer(Module):
           else:
             jet_m_resolution = self.puppisd_resolution_for.Eval( jet.Pt() )
           rand = self.rnd.Gaus(0,jet_m_resolution)
-          for central_or_shift in [ enum_nominal, enum_shift_up, enum_shift_down ]:
+          for central_or_shift in [ Shift.kNominal, Shift.kUp, Shift.kDown ]:
             if jet_m_sf_and_uncertainty[central_or_shift] > 1.:
               #
               # Case 2: we don't have a generator level jet. Smear jet m using a random Gaussian variation
@@ -233,6 +219,6 @@ class jetSmearer(Module):
                smearFactor = 1.e-2
             smear_vals[central_or_shift] = smearFactor
         
-        return ( smear_vals[enum_nominal], smear_vals[enum_shift_up], smear_vals[enum_shift_down] )
+        return ( smear_vals[Shift.kNominal], smear_vals[Shift.kUp], smear_vals[Shift.kDown] )
     
 

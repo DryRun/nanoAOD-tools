@@ -5,6 +5,7 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection 
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
+from PhysicsTools.NanoAODTools.postprocessing.framework.enums import *
 
 class jecUncertProducer(Module):
     def __init__(self,globalTag,uncerts=["Total"],jetFlavour="AK4PFchs",jetColl="Jet", doCppOutput=False):

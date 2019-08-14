@@ -8,11 +8,12 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.tools import matchObjectCollection, matchObjectCollectionMultiple
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetSmearer import jetSmearer
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.JetReCalibrator import JetReCalibrator
+from PhysicsTools.NanoAODTools.postprocessing.framework.enums import *
 
 class jetmetUncertaintiesProducer(Module):
-    def __init__(self, era, globalTag, jesUncertainties = [ "Total" ], jetType = "AK4PFchs", redoJEC=False, noGroom=False):
+    def __init__(self, era, globalTag, jesUncertainties=[ "Total" ], jetType=JetType.kAK4PFchs, redoJEC=False, noGroom=False):
 
-        self.era = era
+        self.era = Year.k2016
         self.redoJEC = redoJEC
         self.noGroom = noGroom
         #--------------------------------------------------------------------------------------------
@@ -23,30 +24,30 @@ class jetmetUncertaintiesProducer(Module):
         self.jesUncertainties = jesUncertainties
 
         # smear jet pT to account for measured difference in JER between data and simulation.
-        if era == "2016":
-            self.jerInputFileName = "Summer16_25nsV1_MC_PtResolution_" + jetType + ".txt"
-            self.jerUncertaintyInputFileName = "Summer16_25nsV1_MC_SF_" + jetType + ".txt"
-        elif era == "2017" or era == "2018": # use Fall17 as temporary placeholder until post-Moriond 2019 JERs are out
-            self.jerInputFileName = "Fall17_V3_MC_PtResolution_" + jetType + ".txt"
-            self.jerUncertaintyInputFileName = "Fall17_V3_MC_SF_" + jetType + ".txt"
+        if era == Year.k2016:
+            self.jerInputFileName = "Summer16_25nsV1_MC_PtResolution_" + JetTypeString(jetType) + ".txt"
+            self.jerUncertaintyInputFileName = "Summer16_25nsV1_MC_SF_" + JetTypeString(jetType) + ".txt"
+        elif era == Year.k2017 or era == Year.k2018: # use Fall17 as temporary placeholder until post-Moriond 2019 JERs are out
+            self.jerInputFileName = "Fall17_V3_MC_PtResolution_" + JetTypeString(jetType) + ".txt"
+            self.jerUncertaintyInputFileName = "Fall17_V3_MC_SF_" + JetTypeString(jetType) + ".txt"
 
         #jet mass resolution: https://twiki.cern.ch/twiki/bin/view/CMS/JetWtagging
         #2016 values
         self.jmrVals = [1.0, 1.2, 0.8] #nominal, up, down
 
         # Use 2017 values for 2018 until 2018 are released
-        if self.era in ["2017","2018"]:
+        if self.era in [Year.k2017, Year.k2018]:
             self.jmrVals = [1.09, 1.14, 1.04]
 
         self.jetSmearer = jetSmearer(globalTag, jetType, self.jerInputFileName, self.jerUncertaintyInputFileName, self.jmrVals)
 
-        if "AK4" in jetType : 
+        if "AK4" in JetTypeString(jetType):
             self.jetBranchName = "Jet"
             self.genJetBranchName = "GenJet"
             self.genSubJetBranchName = None
             self.doGroomed = False
             self.corrMET = True
-        elif "AK8" in jetType :
+        elif "AK8" in JetTypeString(jetType):
             self.jetBranchName = "FatJet"
             self.subJetBranchName = "SubJet"
             self.genJetBranchName = "GenJetAK8"
@@ -71,7 +72,7 @@ class jetmetUncertaintiesProducer(Module):
         #2016 values 
         self.jmsVals = [1.00, 0.9906, 1.0094] #nominal, down, up
         # Use 2017 values for 2018 until 2018 are released
-        if self.era in ["2017","2018"]:
+        if self.era in [Year.k2017, Year.k2018]:
             self.jmsVals = [0.982, 0.978, 0.986]
 
         # read jet energy scale (JES) uncertainties
